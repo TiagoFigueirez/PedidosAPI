@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PedidosAPI.Models
 {
@@ -11,7 +12,9 @@ namespace PedidosAPI.Models
         [Required(ErrorMessage = "Informe a descrição do produto")]
         [MaxLength(100, ErrorMessage = "a Descrição do produto não pode passar de 100 caracteres")]
         public string? Descricao { get; set; }
-        public int Quantidade { get; set; }
+
+        [ForeignKey("SubCategoria")]
+        public int SubcategoriaId {  get; set; }
 
         public SubCategoria? SubCategoria { get; set; }
 
