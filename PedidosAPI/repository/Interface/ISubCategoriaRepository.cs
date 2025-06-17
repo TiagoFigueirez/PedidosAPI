@@ -1,6 +1,9 @@
-﻿namespace PedidosAPI.repository.Interface
+﻿using PedidosAPI.Models;
+
+namespace PedidosAPI.repository.Interface
 {
-    public interface ISubCategoriaRepository
+    public interface ISubCategoriaRepository : IGenericRepository<SubCategoria>
     {
+
     }
 }

@@ -39,6 +39,8 @@ namespace PedidosAPI.Context
                 //verifica se a entidade está sendo modificada
                 if(entidade.State == EntityState.Modified)
                 {
+                    entidade.Property("DataCriacao").IsModified = false;
+
                     entidade.Entity.DataAtualizacao = DateTime.UtcNow;
                 }
             }
