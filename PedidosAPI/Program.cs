@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using PedidosAPI.Context;
 using PedidosAPI.repository;
 using PedidosAPI.repository.Interface;
+using PedidosAPI.Services;
+using PedidosAPI.Services.Interface;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +16,9 @@ builder.Services.AddScoped<ISubCategoriaRepository, SubCategoriaRepository>();
 builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+//serviços
+builder.Services.AddScoped<ICategoriaService, CategoriaService>();
 
 
 builder.Services.AddControllers();

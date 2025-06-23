@@ -31,7 +31,7 @@ namespace PedidosAPI.repository
             }
         }
 
-        public IProdutoRepository ProdutoRepository
+        public IProdutoRepository ProdutoRepository 
         {
             get
             {

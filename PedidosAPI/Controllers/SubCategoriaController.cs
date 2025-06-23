@@ -1,9 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Razor.TagHelpers;
-using Microsoft.Identity.Client;
-using PedidosAPI.Context;
+﻿using Microsoft.AspNetCore.Mvc;
 using PedidosAPI.Models;
 using PedidosAPI.repository.Interface;
 
@@ -73,11 +68,9 @@ namespace PedidosAPI.Controllers
 
             if (subCategoria is null) return NotFound($"Categoria com id={id} não encontrada...");
 
-            subCategoria.IsAtivo = false;
+           _uof.SubCategoriaRepository.Delete(subCategoria);
 
-            _uof.SubCategoriaRepository.Update(subCategoria);
             await _uof.Commit();
-
 
             return Ok(subCategoria);
         }

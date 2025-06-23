@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using PedidosAPI.Models;
 using PedidosAPI.repository.Interface;
 
@@ -66,11 +65,9 @@ namespace PedidosAPI.Controllers
 
             if (categoria is null) return NotFound($"Categoria com id={id} não encontrada...");
 
-            categoria.IsAtivo = false;
-
-            _uof.CategoriaRepository.Update(categoria);
+            _uof.CategoriaRepository.Delete(categoria);
+            
             await _uof.Commit();
-
 
             return Ok(categoria);
         }

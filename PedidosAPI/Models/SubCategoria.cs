@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace PedidosAPI.Models
 {
@@ -11,7 +12,11 @@ namespace PedidosAPI.Models
 
         [ForeignKey("Categoria")]
         public int CategoriaId { get; set; }
+
+        [JsonIgnore]
         public Categoria? Categoria { get; set; }
+
+        [JsonIgnore]
         public List<Produto>? Produtos  { get; set; }
     }
 }
