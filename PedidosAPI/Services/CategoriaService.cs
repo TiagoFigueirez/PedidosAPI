@@ -21,7 +21,7 @@ namespace PedidosAPI.Services
             return categorias;
         }
 
-        public Task<Categoria> GetCategoria(int id)
+        public Task<Categoria?> GetCategoria(int id)
         {
             var categoria =  _uof.CategoriaRepository.GetAsync(c => c.Id == id);
 

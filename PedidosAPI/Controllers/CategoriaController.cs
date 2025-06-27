@@ -69,7 +69,9 @@ namespace PedidosAPI.Controllers
 
             try
             {
-                var categoriaAtualizada = catService.UpdateCategoriaAsync(categoria);
+                var categoriaAtualizada = await  catService.UpdateCategoriaAsync(categoria);
+
+                return Ok(categoriaAtualizada);
             }
             catch (KeyNotFoundException ex)
             {
