@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PedidosAPI.Models;
 using PedidosAPI.repository.Interface;
+using PedidosAPI.Services.Interface;
 
 namespace PedidosAPI.Controllers
 {
@@ -8,17 +9,19 @@ namespace PedidosAPI.Controllers
     [ApiController]
     public class CategoriaController : ControllerBase
     {
+        private readonly ICategoriaService catService;
         private readonly IUnitOfWork _uof;
 
-        public CategoriaController(IUnitOfWork uof)
+        public CategoriaController(ICategoriaService catService, IUnitOfWork uof)
         {
+            this.catService = catService;
             _uof = uof;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Categoria>>> Get()
         {
-            var categorias = await _uof.CategoriaRepository.GetAllAsync();
+            var categorias = await catService.GetCategoriasAsync();
 
             if(categorias is null) return NotFound();
 
@@ -28,23 +31,35 @@ namespace PedidosAPI.Controllers
         [HttpGet("{id:int}", Name = "ObterCategoria")]
         public async Task<ActionResult<Categoria>> Get(int id)
         {
-            var categoria = await _uof.CategoriaRepository.GetAsync(c => c.Id == id);
+                try
+                {
+                    var categoriaEncontrada = await catService.GetCategoria(id);
+                    return Ok(categoriaEncontrada);
 
-            if(categoria is null) return NotFound($"Categoria não encontrada....");
-
-            return Ok(categoria);
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    return NotFound(new { ex.Message });
+                }
         }
 
         [HttpPost]
         public async Task<ActionResult<Categoria>> Post(Categoria categoria)
         {
-            if(categoria is null) return BadRequest("Dados inválidos ou em branco");
+            try
+            {
+                var categoriaCriada = await catService.CreateCategoria(categoria);
 
-            var categoriaCriada = _uof.CategoriaRepository.Create(categoria);
-
-             await _uof.Commit();
-
-            return new CreatedAtRouteResult("ObterCategoria", new {id = categoriaCriada.Id}, categoriaCriada);
+                return new CreatedAtRouteResult("ObterCategoria", new { id = categoriaCriada.Id }, categoriaCriada);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { ex.Message });
+            }
         }
 
         [HttpPut]
@@ -52,24 +67,36 @@ namespace PedidosAPI.Controllers
         {
             if (id != categoria.Id) return BadRequest("Categoria não encontrada para atualizar....");
 
-            var categoriaAtualizada = _uof.CategoriaRepository.Update(categoria);
-            await _uof.Commit();
-
-            return Ok(categoriaAtualizada);
+            try
+            {
+                var categoriaAtualizada = catService.UpdateCategoriaAsync(categoria);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { mensagem = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensagem = "Erro ao atualizar a categoria.", detalhe = ex.Message });
+            }
         }
 
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<Categoria>> Delete(int id)
         {
-            var categoria = await _uof.CategoriaRepository.GetAsync(c=>c.Id == id);
+            try
+            {
+                await catService.RemoverCategoriaAsync(id);
+                return NoContent();
 
-            if (categoria is null) return NotFound($"Categoria com id={id} não encontrada...");
-
-            _uof.CategoriaRepository.Delete(categoria);
-            
-            await _uof.Commit();
-
-            return Ok(categoria);
+            }catch(InvalidOperationException ex)
+            {
+                return BadRequest(new {ex.Message});
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { ex.Message });
+            }
         }
     }
 }

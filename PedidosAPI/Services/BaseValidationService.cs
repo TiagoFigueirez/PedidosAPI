@@ -5,13 +5,12 @@ namespace PedidosAPI.Services
 {
     public class BaseValidationService
     {
-
-        protected async Task ValidationExclusaoDependente<TDependente>(IGenericRepository<TDependente> repository,
-            Expression<Func<TDependente, bool>> foreignKeySelector, string entityName) where  TDependente : class
+        protected async Task ValidationEntityExisting<TDependente>(IGenericRepository<TDependente> repository,
+            Expression<Func<TDependente, bool>> foreignKeySelector, string messege) where  TDependente : class
         {
-            var dependentes = await repository.GetAsync(foreignKeySelector);
+            var existente = await repository.GetAsync(foreignKeySelector);
 
-            if (dependentes != null) throw new InvalidOperationException($"Não foi possível exclui {entityName} pois ela possui dependentes");
+            if (existente != null) throw new InvalidOperationException(messege);
 
         }
     }
