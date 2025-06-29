@@ -1,11 +1,10 @@
 ﻿using PedidosAPI.Models;
 using PedidosAPI.repository.Interface;
 using PedidosAPI.Services.Interface;
-using System.Runtime.InteropServices;
 
 namespace PedidosAPI.Services
 {
-    public class CategoriaService : BaseValidationService, ICategoriaService
+    public class CategoriaService : BaseService, ICategoriaService
     {
         private readonly IUnitOfWork _uof;
 
@@ -21,7 +20,7 @@ namespace PedidosAPI.Services
             return categorias;
         }
 
-        public Task<Categoria?> GetCategoria(int id)
+        public Task<Categoria> GetCategoria(int id)
         {
             var categoria =  _uof.CategoriaRepository.GetAsync(c => c.Id == id);
 
@@ -32,11 +31,11 @@ namespace PedidosAPI.Services
 
         public async Task<Categoria> CreateCategoria(Categoria categoria)
         {
-            if (categoria == null) throw new KeyNotFoundException("Categoria não encontrada");
+            if (categoria == null) throw new KeyNotFoundException("Dados em branco");
 
             await ValidationEntityExisting(
                 _uof.CategoriaRepository,
-                c => c.Id == categoria.Id,
+                c => c.Nome == categoria.Nome,
                 "Não é possivel cadastrar a categoria pois ela já existe !"
                 );
 
@@ -48,6 +47,11 @@ namespace PedidosAPI.Services
 
         public async Task<Categoria> UpdateCategoriaAsync(Categoria categoria)
         {
+            await ValidationEntityExisting(
+                _uof.CategoriaRepository,
+                c => c.Nome == categoria.Nome,
+                "Não é possível atualizar a categoria com este nome poois ele já existe !!!"
+                );
 
             var categoriaAtualizada = _uof.CategoriaRepository.Update(categoria);
             await _uof.Commit();
@@ -61,12 +65,12 @@ namespace PedidosAPI.Services
             await ValidationEntityExisting(
                 _uof.SubCategoriaRepository, 
                 s => s.CategoriaId == id,
-                "Não é possivel excluir a categoria "
+                "Não é possivel excluir a categoria pois existe pelo menos 1 subcategoria atrelada a ela"
                 );
 
             var categoria = await _uof.CategoriaRepository.GetAsync(c => c.Id == id);
 
-            if (categoria == null) throw new KeyNotFoundException("Categoria não encontrada !");
+            if (categoria == null) throw new KeyNotFoundException("Categoria não encontrada para excluir !");
 
             _uof.CategoriaRepository.Delete(categoria);
         }

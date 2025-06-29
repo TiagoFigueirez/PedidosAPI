@@ -3,8 +3,10 @@ using System.Linq.Expressions;
 
 namespace PedidosAPI.Services
 {
-    public class BaseValidationService
+    public class BaseService
     {
+        //essa classe armazena metodos comuns a todos os Serviços
+
         protected async Task ValidationEntityExisting<TDependente>(IGenericRepository<TDependente> repository,
             Expression<Func<TDependente, bool>> foreignKeySelector, string messege) where  TDependente : class
         {

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace PedidosAPI.Models
 {
@@ -16,6 +17,7 @@ namespace PedidosAPI.Models
         [ForeignKey("SubCategoria")]
         public int SubcategoriaId {  get; set; }
 
+        [JsonIgnore]
         public SubCategoria? SubCategoria { get; set; }
 
 

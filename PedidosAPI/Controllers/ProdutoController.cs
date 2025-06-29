@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using PedidosAPI.Models;
-using PedidosAPI.repository.Interface;
-using System.Reflection.Metadata.Ecma335;
+using PedidosAPI.Services.Interface;
 
 namespace PedidosAPI.Controllers
 {
@@ -10,17 +8,17 @@ namespace PedidosAPI.Controllers
     [ApiController]
     public class ProdutoController : ControllerBase
     {
-        private readonly IUnitOfWork _uof;
+        private readonly IProdutoService _prodtSerive;
 
-        public ProdutoController(IUnitOfWork uof)
+        public ProdutoController(IProdutoService prodtSerive)
         {
-            _uof = uof;
+            _prodtSerive = prodtSerive;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Produto>>> Get()
         {
-            var produtos =  await _uof.ProdutoRepository.GetAllAsync();
+            var produtos =  await _prodtSerive.GetProdutosAsync();
 
             if (produtos is null) return NotFound();
 
@@ -30,46 +28,72 @@ namespace PedidosAPI.Controllers
         [HttpGet("{id:int}",Name ="ObterProduto")]
         public async Task<ActionResult<Produto>> Get(int id)
         {
-            var produto = await _uof.ProdutoRepository.GetAsync(p => p.Id == id);
-
-            if(produto is null) return NotFound();
-
-            return Ok(produto);
+            try
+            {
+                var produto = await _prodtSerive.GetProduto(id);
+                return Ok(produto);
+            }
+            catch(KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpPost]
         public async Task<ActionResult<Produto>> Post(Produto produto)
         {
-            if (produto is null) return BadRequest();
-
-            var produtoCriado = _uof.ProdutoRepository.Create(produto);
-
-            await _uof.Commit();
-
-            return new CreatedAtRouteResult("ObterProduto", new { id = produtoCriado.Id }, produtoCriado);
+            try
+            {
+                var produtoCriado = await _prodtSerive.CreateProduto(produto);
+                return new CreatedAtRouteResult("ObterProduto", new { id = produtoCriado.Id }, produtoCriado);
+            }
+            catch(KeyNotFoundException ex)
+            {
+                return NotFound(new { ex.Message });
+            }
+            catch(InvalidOperationException ex)
+            {
+                return BadRequest(new { ex.Message });
+            }
+            
         }
 
+        [HttpPut]
         public async Task<ActionResult<Produto>> Put(int id, Produto produto)
         {
             if (id != produto.Id) return BadRequest("Produto não encontrado");
 
-            var produtoAtualizado = _uof.ProdutoRepository.Update(produto);
-            await _uof.Commit();
-
-            return Ok(produtoAtualizado);   
+            try
+            {
+                var produtoAtualizado = await _prodtSerive.UpdateProdutoAsync(produto);
+                return Ok(produtoAtualizado);
+            }catch(KeyNotFoundException ex)
+            {
+                return NotFound(new {ex.Message});
+            }
+            catch(InvalidOperationException ex)
+            {
+                return BadRequest(new { ex.Message });
+            } 
 
         }
 
+        [HttpDelete]
         public async Task<ActionResult<Produto>> Delete(int id)
         {
-            var produto = await _uof.ProdutoRepository.GetAsync(p => p.Id == id);
-
-            if (produto is null) return NotFound();
-
-            _uof.ProdutoRepository.Delete(produto);
-            await _uof.Commit();
-
-            return Ok(produto);
+            try
+            {
+                await _prodtSerive.RemoverProdutoAsync(id);
+                return Ok();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { ex.Message });
+            }
         }
     }
 }

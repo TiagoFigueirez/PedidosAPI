@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PedidosAPI.Models;
-using PedidosAPI.repository.Interface;
+using PedidosAPI.Services.Interface;
 
 namespace PedidosAPI.Controllers
 {
@@ -8,17 +8,17 @@ namespace PedidosAPI.Controllers
     [ApiController]
     public class SubCategoriaController : ControllerBase
     {
-        private readonly IUnitOfWork _uof;
+        private readonly ISubCategoriaService _subCatService;
 
-        public SubCategoriaController(IUnitOfWork uof)
+        public SubCategoriaController(ISubCategoriaService subCatService)
         {
-            _uof = uof;
+            _subCatService = subCatService;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SubCategoria>>> Get()
         {
-            var subCategorias = await _uof.SubCategoriaRepository.GetAllAsync();
+            var subCategorias = await _subCatService.GetSubCategoriasAsync();
 
             if (subCategorias is null)
                 return NotFound();
@@ -30,24 +30,32 @@ namespace PedidosAPI.Controllers
         [HttpGet("{id:int}", Name = "ObterSubCategoria")]
         public async Task<ActionResult<IEnumerable<SubCategoria>>> Get(int id)
         {
-            var subCategoria = await _uof.SubCategoriaRepository.GetAsync(sc => sc.Id == id);
-
-            if(subCategoria is null) return NotFound();
-
-            return Ok(subCategoria);
+            try
+            {
+                var subCategoria = await _subCatService.GetSubCategoria(id);
+                return Ok(subCategoria);
+            }catch(KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpPost]
         public async Task<ActionResult<SubCategoria>> Post(SubCategoria subCategoria)
         {
-            if(subCategoria is null) return BadRequest("Dados Inválidos ou em branco");
-
-            var SubCategoriaCriada = _uof.SubCategoriaRepository.Create(subCategoria);
-
-
-            await _uof.Commit();
-
-            return new CreatedAtRouteResult("ObterSubCategoria", new { id = SubCategoriaCriada.Id }, SubCategoriaCriada);
+            try
+            {
+                var SubCategoriaCriada = await _subCatService.CreateSubCategoria(subCategoria);
+                return new CreatedAtRouteResult("ObterSubCategoria", new { id = SubCategoriaCriada.Id }, SubCategoriaCriada);
+            }
+            catch(KeyNotFoundException ex)
+            {
+                return NotFound(new { ex.Message });
+            }
+            catch(InvalidOperationException ex)
+            {
+                return BadRequest(new { ex.Message });
+            }
         }
 
         [HttpPut]
@@ -55,24 +63,38 @@ namespace PedidosAPI.Controllers
         {
             if (id != subCategoria.Id) return BadRequest("Subcategoria não encontrada para atualizar");
 
-            var categoriaAtualizada = _uof.SubCategoriaRepository.Update(subCategoria);
-            await _uof.Commit();
-
-            return Ok(categoriaAtualizada);
+            try
+            {
+                var subCategoriaAtualizada = await _subCatService.UpdateSubCategoriaAsync(subCategoria);
+                return Ok(subCategoriaAtualizada);
+            }
+            catch(KeyNotFoundException ex)
+            {
+                return NotFound(new { ex.Message });
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, new { mensagem = "Erro ao atualizar a Subcategoria.", detalhe = ex.Message });
+            }
+            
         }
 
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<Categoria>> Delete(int id)
         {
-            var subCategoria = await _uof.SubCategoriaRepository.GetAsync(c => c.Id == id);
-
-            if (subCategoria is null) return NotFound($"Categoria com id={id} não encontrada...");
-
-           _uof.SubCategoriaRepository.Delete(subCategoria);
-
-            await _uof.Commit();
-
-            return Ok(subCategoria);
+            try
+            {
+                await _subCatService.RemoverSubCategoriaAsync(id);
+                return NoContent();
+            }
+            catch(InvalidOperationException ex)
+            {
+                return BadRequest(new { ex.Message });
+            }
+            catch(KeyNotFoundException ex)
+            {
+                return NotFound(new { ex.Message });
+            }
         }
     }
 }

@@ -10,12 +10,10 @@ namespace PedidosAPI.Controllers
     public class CategoriaController : ControllerBase
     {
         private readonly ICategoriaService catService;
-        private readonly IUnitOfWork _uof;
 
-        public CategoriaController(ICategoriaService catService, IUnitOfWork uof)
+        public CategoriaController(ICategoriaService catService)
         {
             this.catService = catService;
-            _uof = uof;
         }
 
         [HttpGet]

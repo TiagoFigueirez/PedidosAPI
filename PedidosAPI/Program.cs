@@ -8,7 +8,9 @@ using PedidosAPI.Services.Interface;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddDbContext<PedidosDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<PedidosDbContext>(options => options
+                                                .UseSqlServer(builder.Configuration
+                                                .GetConnectionString("DefaultConnection")));
 
 //repositorios
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
@@ -19,6 +21,8 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 //serviços
 builder.Services.AddScoped<ICategoriaService, CategoriaService>();
+builder.Services.AddScoped<ISubCategoriaService, SubCategoriaService>();
+builder.Services.AddScoped<IProdutoService, ProdutoService>();
 
 
 builder.Services.AddControllers();
